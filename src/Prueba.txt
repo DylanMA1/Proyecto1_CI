@@ -1,0 +1,10 @@
+rodolfo 5
+bromista 3.14
+trueno true
+cupido 'a'
+cometa "Hola Mundo"
+abrecuento
+    elfo
+    narra "Esto es una prueba"
+    finacuento
+cierracuento
