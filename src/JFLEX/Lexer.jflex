@@ -4,12 +4,14 @@ import java_cup.runtime.Symbol;
 import CUP.sym;
 
 %%
-
 %cup
+%public
 %class Lexer
 %unicode
 %line
 %column
+%char
+%ignorecase
 %%
 
 // Ignorar espacios y tabulaciones
@@ -17,6 +19,13 @@ import CUP.sym;
 
 // Detectar fin de línea y avanzar a la siguiente
 [\r\n]+ { /* Saltar a la siguiente línea */ }
+
+// Ignorar comentarios
+"#.*" { /* Comentario de una línea: ignorar */ }
+"\_[^/]*_/" { /* Comentario multi-línea: ignorar */ }
+
+// Identificadores
+"_[a-zA-Z0-9_]+_" { return new Symbol(sym.IDENTIFIER, yytext()); }
 
 // Palabras reservadas
 "rodolfo" { return new Symbol(sym.INTEGER); }
@@ -78,19 +87,12 @@ import CUP.sym;
 // Comillas
 "\"" { return new Symbol(sym.QUOTE); }
 
-// Identificadores
-"_[a-zA-Z0-9_]+_" { return new Symbol(sym.IDENTIFIER, yytext()); }
-
 // Literales
 [0-9]+ { return new Symbol(sym.INT_LITERAL, Integer.parseInt(yytext())); }
 [0-9]+\.[0-9]+ { return new Symbol(sym.FLOAT_LITERAL, Float.parseFloat(yytext())); }
 "true"|"false" { return new Symbol(sym.BOOL_LITERAL, Boolean.parseBoolean(yytext())); }
 '[^']' { return new Symbol(sym.CHAR_LITERAL, yytext().charAt(1)); }
 "\".*?\"" { return new Symbol(sym.STRING_LITERAL, yytext().substring(1, yytext().length() - 1)); }
-
-// Comentarios
-"#.*" { /* Comentario de una línea: ignorar */ }
-"/_([^_]|_[^/])*_/" { /* Comentario multi-línea: ignorar */ }
 
 // Manejo de errores léxicos
 . {
