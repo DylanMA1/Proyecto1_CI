@@ -1,6 +1,7 @@
 package JFLEX;
 
 import java_cup.runtime.Symbol;
+import CUP.sym;
 
 %%
 
@@ -9,8 +10,13 @@ import java_cup.runtime.Symbol;
 %unicode
 %line
 %column
-
 %%
+
+// Ignorar espacios y tabulaciones
+[ \t]+ { /* Ignorar */ }
+
+// Detectar fin de línea y avanzar a la siguiente
+[\r\n]+ { /* Saltar a la siguiente línea */ }
 
 // Palabras reservadas
 "rodolfo" { return new Symbol(sym.INTEGER); }
@@ -68,6 +74,9 @@ import java_cup.runtime.Symbol;
 // Funciones I/O
 "narra" { return new Symbol(sym.PRINT); }
 "escucha" { return new Symbol(sym.READ); }
+
+// Comillas
+"\"" { return new Symbol(sym.QUOTE); }
 
 // Identificadores
 "_[a-zA-Z0-9_]+_" { return new Symbol(sym.IDENTIFIER, yytext()); }
