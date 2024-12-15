@@ -26,11 +26,13 @@ public class sym {
   public static final int AND = 29;
   public static final int CLOSE_PAREN = 12;
   public static final int OR = 30;
+  public static final int COMMA = 51;
   public static final int BOOL = 4;
   public static final int LESS_EQUAL = 24;
   public static final int OPEN_BLOCK = 7;
   public static final int PLUS = 15;
   public static final int MULTIPLY = 17;
+  public static final int MAIN = 52;
   public static final int QUOTE = 50;
   public static final int ASSIGN = 13;
   public static final int IF = 32;
@@ -52,6 +54,7 @@ public class sym {
   public static final int WHILE = 34;
   public static final int DEFAULT = 38;
   public static final int FLOAT = 3;
+  public static final int FUNCTION_OR_VARIABLE = 53;
   public static final int STRING = 6;
   public static final int FLOAT_LITERAL = 46;
   public static final int LESS_THAN = 23;
@@ -110,7 +113,10 @@ public class sym {
   "BOOL_LITERAL",
   "CHAR_LITERAL",
   "STRING_LITERAL",
-  "QUOTE"
+  "QUOTE",
+  "COMMA",
+  "MAIN",
+  "FUNCTION_OR_VARIABLE"
   };
 }
 

@@ -10,11 +10,29 @@ import CUP.sym;
 %unicode
 %line
 %column
+
+%{
+public int getLine() {
+    return yyline;
+}
+
+public int getColumn() {
+    return yycolumn;
+}
+%}
 %%
+
+[$%&/] { /* Ignorar si no están dentro de una cadena */ }
+// Literales
+[0-9]+ { return new Symbol(sym.INT_LITERAL, Integer.parseInt(yytext())); }
+[0-9]+\.[0-9]+ { return new Symbol(sym.FLOAT_LITERAL, Float.parseFloat(yytext())); }
+"true"|"false" { return new Symbol(sym.BOOL_LITERAL, Boolean.parseBoolean(yytext())); }
+'[^']' { return new Symbol(sym.CHAR_LITERAL, yytext().charAt(1)); }
+"\"([^\"\\\\]|\\\\.)*\"" { return new Symbol(sym.STRING_LITERAL, yytext().substring(1, yytext().length() - 1)); }
 
 // Comentarios
 "#".* { /* Comentario de una línea: ignorar */ }
-"\\_" ([^\n]|(\n))*? "_/" { /* Ignorar comentario multilínea */ }
+"\\_"([^\\_]|(\\_([^\\_]|\\n)*\\_))*"_/" { /* Ignorar comentario multilínea */ }
 
 // Ignorar espacios y tabulaciones
 [ \t]+ { /* Ignorar */ }
