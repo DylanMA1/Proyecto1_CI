@@ -13,13 +13,17 @@ terminal AND, OR, NOT;
 terminal IF, ELSE, WHILE, FOR, SWITCH, CASE, DEFAULT, BREAK, RETURN, COLON;
 terminal PRINT, READ;
 terminal IDENTIFIER, INT_LITERAL, FLOAT_LITERAL, BOOL_LITERAL, CHAR_LITERAL, STRING_LITERAL;
-terminal QUOTE;
+terminal QUOTE, COMMA, MAIN;
+terminal FUNCTION_OR_VARIABLE;
 
 // Declaración de no terminales
 non terminal program;
+non terminal main_proc;
 non terminal statement_list;
 non terminal statement;
 non terminal expression;
+non terminal parameter_list;
+non terminal parameter;
 
 // Precedencia y asociatividad para operadores
 precedence left PLUS, MINUS;
@@ -30,16 +34,31 @@ precedence left POWER;
 start with program;
 
 // Reglas de gramática
-program ::= statement_list;
 
+// Programa debe iniciar con el procedimiento main
+program ::= main_proc;
+
+// Regla para el procedimiento main
+main_proc ::= INTEGER MAIN OPEN_PAREN CLOSE_PAREN OPEN_BLOCK statement_list CLOSE_BLOCK
+            | FLOAT MAIN OPEN_PAREN CLOSE_PAREN OPEN_BLOCK statement_list CLOSE_BLOCK;
+
+// Lista de sentencias
 statement_list ::= statement_list statement
                  | /* vacío */;
 
+// Reglas para sentencias
 statement ::= IF OPEN_BLOCK expression CLOSE_BLOCK statement_list CLOSE_BLOCK
             | WHILE OPEN_BLOCK expression CLOSE_BLOCK statement_list CLOSE_BLOCK
-            | PRINT OPEN_PAREN expression CLOSE_PAREN END_STATEMENT
+            | PRINT OPEN_PAREN parameter_list CLOSE_PAREN END_STATEMENT
             | IDENTIFIER ASSIGN expression END_STATEMENT;
 
+// Manejo de parámetros (coma como separador)
+parameter_list ::= parameter
+                 | parameter_list COMMA parameter;
+
+parameter ::= expression;
+
+// Reglas para expresiones
 expression ::= expression PLUS expression
              | expression MINUS expression
              | expression MULTIPLY expression

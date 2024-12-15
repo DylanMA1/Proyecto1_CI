@@ -4,15 +4,17 @@ import java_cup.runtime.Symbol;
 import CUP.sym;
 
 %%
-%cup
 %public
+%cup
 %class Lexer
 %unicode
 %line
 %column
-%char
-%ignorecase
 %%
+
+// Comentarios
+"#".* { /* Comentario de una línea: ignorar */ }
+"\\_" ([^\n]|(\n))*? "_/" { /* Ignorar comentario multilínea */ }
 
 // Ignorar espacios y tabulaciones
 [ \t]+ { /* Ignorar */ }
@@ -20,12 +22,8 @@ import CUP.sym;
 // Detectar fin de línea y avanzar a la siguiente
 [\r\n]+ { /* Saltar a la siguiente línea */ }
 
-// Ignorar comentarios
-"#.*" { /* Comentario de una línea: ignorar */ }
-"\_[^/]*_/" { /* Comentario multi-línea: ignorar */ }
-
-// Identificadores
-"_[a-zA-Z0-9_]+_" { return new Symbol(sym.IDENTIFIER, yytext()); }
+// Procedimiento Main
+"_verano_" { return new Symbol(sym.MAIN); }
 
 // Palabras reservadas
 "rodolfo" { return new Symbol(sym.INTEGER); }
@@ -93,6 +91,15 @@ import CUP.sym;
 "true"|"false" { return new Symbol(sym.BOOL_LITERAL, Boolean.parseBoolean(yytext())); }
 '[^']' { return new Symbol(sym.CHAR_LITERAL, yytext().charAt(1)); }
 "\".*?\"" { return new Symbol(sym.STRING_LITERAL, yytext().substring(1, yytext().length() - 1)); }
+
+// Identificadores
+_([a-zA-Z0-9]+)_ { return new Symbol(sym.IDENTIFIER, yytext()); }
+
+// Coma como separador
+"," { return new Symbol(sym.COMMA); }
+
+// Llamadas a funciones o variables
+[a-zA-Z][a-zA-Z0-9_]* { return new Symbol(sym.FUNCTION_OR_VARIABLE, yytext()); }
 
 // Manejo de errores léxicos
 . {
