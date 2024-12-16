@@ -1,80 +1,150 @@
 import java_cup.runtime.Symbol;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Scanner;
+
 import JFLEX.Lexer;
 import CUP.sym;
+import jflex.exceptions.SilentExit;
 
 /**
  * Clase principal que realiza el análisis léxico de un archivo de texto
- * utilizando un lexer generado por JFlex y la librería CUP.
+ * utilizando un lexer generado por JFlex y un parser generado por CUP.
  *
- * El programa lee un archivo de entrada, realiza el análisis léxico token por token,
- * y escribe los resultados (tokens, tipo, línea, columna) en un archivo de salida.
+ * Funcionalidad:
+ * - Genera automáticamente el lexer (a partir de un archivo .jflex).
+ * - Genera automáticamente el parser (a partir de un archivo .cup).
+ * - Solicita al usuario la ruta de un archivo de entrada.
+ * - Realiza un análisis léxico sobre el archivo proporcionado.
+ * - Escribe los resultados (tokens, tipo, línea, columna) en un archivo de salida.
  */
 public class Main {
 
     /**
-     * Método principal que ejecuta el análisis léxico.
+     * Método principal que controla la ejecución del programa.
      *
-     * @param args Argumentos de línea de comandos. Si no se proporciona un archivo como argumento,
-     *             se utilizará un archivo por defecto en la ruta especificada.
+     * @param args Argumentos de línea de comandos.
+     *             Si no se proporciona un archivo, solicita la ruta al usuario.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SilentExit {
+
+        // Guardar una referencia al flujo de entrada original
+        InputStream originalIn = System.in;
+
+        // Rutas de los archivos de configuración para JFlex y CUP
+        String lexerFilePath = "src/JFLEX/Lexer.jflex";  // Ruta del archivo Lexer.jflex
+        String parserFilePath = "src/CUP/Parser.cup";    // Ruta del archivo Parser.cup
+
+        // Generar el lexer y el parser utilizando JFlex y CUP
+        generarLexer(lexerFilePath);
+        generarParser(parserFilePath);
+
+        // Restaurar el flujo original de entrada tras ejecutar las funciones generadoras
+        System.setIn(originalIn);
+
+        // Instancia para leer entradas desde la consola
+        Scanner scanner = new Scanner(System.in);
         String archivo;
 
-        // Verifica si se pasó un archivo como argumento
-        if (args.length != 1) {
-            // Si no se pasó archivo, usa la ruta por defecto
-            archivo = "C:\\Users\\Dylan MA\\OneDrive - Estudiantes ITCR\\TEC\\VERANO 2024\\Compiladores e Interpretes\\Proyecto1_Compiladores\\Proyecto1_CI\\src\\Prueba.txt";
-        } else {
-            // Usa el archivo pasado como argumento
-            archivo = args[0];
+        // Bucle para solicitar al usuario la ruta del archivo de entrada
+        while (true) {
+            System.out.print("Por favor, ingrese la ruta del archivo: ");
+            archivo = scanner.nextLine();
+
+            // Validar si el archivo existe y es accesible
+            if (Files.exists(Paths.get(archivo)) && Files.isReadable(Paths.get(archivo))) {
+                break; // Salir del bucle si la ruta es válida
+            } else {
+                System.err.println("La ruta proporcionada no es válida o el archivo no es accesible. Inténtelo nuevamente.");
+            }
         }
-        // Archivo donde se guardarán los resultados del análisis léxico
+
+        // Nombre del archivo donde se guardarán los resultados del análisis léxico
         String archivoSalida = "salida.txt";
 
-        // Bloque try-with-resources para manejar los recursos de entrada y salida
+        // Bloque try-with-resources para manejar correctamente los recursos de entrada y salida
         try (FileReader reader = new FileReader(archivo);
              BufferedWriter writer = new BufferedWriter(new FileWriter(archivoSalida, false))) {
 
-            // Crea una instancia del lexer que procesará el archivo de entrada
+            // Crear una instancia del lexer configurado con el archivo de entrada
             Lexer lexer = new Lexer(reader);
 
-            Symbol token;
-            // Comienza el análisis léxico
+            Symbol token; // Variable para almacenar el token actual
+
+            // Iniciar el análisis léxico
             while (true) {
-                // Obtiene el siguiente token
-                token = lexer.next_token();
+                token = lexer.next_token(); // Obtener el siguiente token
 
-                // Si el token no es nulo, procesa la información del token
+                // Verificar si el token no es EOF
                 if (token.sym != 0) {
-                    // Obtiene el nombre del token a partir del símbolo
+                    // Obtener el nombre del token y su posición en el archivo
                     String tokenName = sym.terminalNames[token.sym];
+                    int linea = lexer.getLine() + 1; // Línea (ajustada a índice 1)
+                    int columna = lexer.getColumn() + 1; // Columna (ajustada a índice 1)
 
-                    // Obtiene la línea y la columna en la que se encontró el token
-                    int linea = lexer.getLine() + 1;
-                    int columna = lexer.getColumn() + 1;
-
-                    // Imprime la información del token en la consola
+                    // Mostrar el token en la consola
                     System.out.println("Token: " + tokenName + ", Tipo: " + token.sym + ", Línea: " + linea + ", Columna: " + columna);
-                    // Escribe la información del token en el archivo de salida
+
+                    // Escribir el token en el archivo de salida
                     writer.write("Token: " + tokenName + ", Tipo: " + token.sym + ", Línea: " + linea + ", Columna: " + columna + "\n");
 
                 } else {
-                    // Si se alcanza el final del archivo, se termina el análisis
+                    // Si se alcanza el final del archivo (EOF), finalizar el análisis
                     System.out.println("Análisis terminado: se alcanzó el final del archivo.");
                     break;
                 }
             }
         } catch (IOException e) {
-            // Maneja errores de lectura del archivo
-            System.err.println("Error al leer el archivo: " + e.getMessage());
+            // Manejar errores relacionados con la lectura/escritura de archivos
+            System.err.println("Error al leer o escribir archivos: " + e.getMessage());
         } catch (Exception e) {
-            // Maneja otros errores durante el análisis léxico
+            // Manejar errores generales durante el análisis léxico
             System.err.println("Error durante el análisis léxico: " + e.getMessage());
         }
+    }
+
+    /**
+     * Genera el parser (análisis sintáctico) utilizando CUP.
+     *
+     * @param inputFile La ruta al archivo Parser.cup.
+     */
+    public static void generarParser(String inputFile) {
+        try {
+            // Configuración de los argumentos para CUP
+            String[] archivoEntrada = {
+                    "-destdir", "src/CUP",    // Directorio destino para el parser generado
+                    "-parser", "Parser",     // Nombre de la clase del parser
+                    "-symbols", "sym",       // Nombre de la clase para los símbolos
+                    inputFile                // Ruta del archivo .cup
+            };
+
+            // Generar el parser utilizando CUP
+            java_cup.Main.main(archivoEntrada);
+
+            // Indicar éxito en la generación
+            System.out.println("Parser generado exitosamente.");
+        } catch (Exception e) {
+            // Manejar errores durante la generación del parser
+            System.err.println("Error al generar el parser: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Genera el lexer (análisis léxico) utilizando JFlex.
+     *
+     * @param inputFile La ruta al archivo Lexer.jflex.
+     * @throws SilentExit Excepción que puede lanzar JFlex si ocurre un error.
+     */
+    public static void generarLexer(String inputFile) throws SilentExit {
+        // Configuración de los argumentos para JFlex
+        String[] archivoEntrada = { inputFile };
+
+        // Generar el lexer utilizando JFlex
+        jflex.Main.generate(archivoEntrada);
+
+        // Indicar éxito en la generación
+        System.out.println("Lexer generado exitosamente.");
     }
 }

@@ -1,8 +1,10 @@
 package JFLEX;
 
+// Importaciones necesarias
 import java_cup.runtime.Symbol;
 import CUP.sym;
 
+// Asignacion de reglas
 %%
 %public
 %cup
@@ -11,6 +13,7 @@ import CUP.sym;
 %line
 %column
 
+// Metodos necesarios
 %{
 public int getLine() {
     return yyline;
